@@ -73,15 +73,16 @@ input_df = input_df[expected_cols].copy()
 input_df[expected_cols] = scaler.transform(input_df[expected_cols])
 
 
-
-# === Prediksi ===
+# === PREDIKSI ===
 if st.button("🔍 Prediksi"):
+    input_df.columns = model.feature_names_in_  # ⬅️ PENTING!
     pred = model.predict(input_df)[0]
     prob = model.predict_proba(input_df)[0][1]
 
     st.subheader("Hasil Prediksi:")
     if pred == 1:
-        st.error("⚠️ Anda berpotensi mengalami gangguan kecemasan.")
+        st.error(f"⚠️ Anda berpotensi mengalami gangguan kecemasan.\n\nProbabilitas: {prob:.2%}")
     else:
-        st.success("✅ Anda tidak menunjukkan tanda-tanda gangguan kecemasan.")
+        st.success(f"✅ Anda tidak menunjukkan tanda-tanda gangguan kecemasan.\n\nProbabilitas: {prob:.2%}")
+
     
