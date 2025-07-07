@@ -15,7 +15,7 @@ with open("label_encoders.pkl", "rb") as f:
 st.set_page_config(page_title="Prediksi Gangguan Kecemasan", layout="centered")
 st.title("🧠 Prediksi Gangguan Kecemasan Berdasarkan Data Pribadi")
 
-st.markdown("Masukkan informasi berikut untuk memprediksi kemungkinan mengalami **gangguan kecemasan**:")
+st.markdown("Masukkan informasi berikut untuk memprediksi kemungkinan mengalami *gangguan kecemasan*:")
 
 # === Input Form Manual ===
 Gender = st.selectbox("Gender", label_encoders["Gender"].classes_)
@@ -61,29 +61,32 @@ input_dict = {
 
 input_df = pd.DataFrame([input_dict])
 
-# === Encode kolom kategorikal ===
+# === Encode Kategorikal ===
 for col in label_encoders:
     input_df[col] = label_encoders[col].transform(input_df[col])
 
-# === Pastikan kolom sesuai urutan saat training ===
-expected_cols = scaler.feature_names_in_.tolist()
+# === Scaling ===
+# Pastikan kolom numerik sesuai dengan yang digunakan saat training scaler
+numerical_cols = ['Age', 'Sleep Hours', 'Physical Activity (hrs/week)', 
+                 'Caffeine Intake (mg/day)', 'Alcohol Consumption (drinks/week)',
+                 'Stress Level (1-10)', 'Heart Rate (bpm)', 'Breathing Rate (breaths/min)',
+                 'Sweating Level (1-5)', 'Therapy Sessions (per month)', 'Diet Quality (1-10)']
 
-# 💥 GANTI DENGAN INI — SCALING DENGAN NAMA KOLUMNYA
-i# === Scaling ===
-expected_cols = scaler.feature_names_in_.tolist()
-input_df = input_df[expected_cols].copy()
-input_df_scaled = pd.DataFrame(scaler.transform(input_df), columns=expected_cols)
+# Pastikan hanya kolom yang ada di input_df dan scaler yang digunakan
+numerical_cols = [col for col in numerical_cols if col in input_df.columns]
+input_df[numerical_cols] = scaler.transform(input_df[numerical_cols])
 
 # === Prediksi ===
 if st.button("🔍 Prediksi"):
-    pred = model.predict(input_df_scaled)[0]
-    prob = model.predict_proba(input_df_scaled)[0][1]
+    try:
+        pred = model.predict(input_df)[0]
+        prob = model.predict_proba(input_df)[0][1]
 
-    st.subheader("Hasil Prediksi:")
-    if pred == 1:
-        st.error(f"⚠️ Anda berpotensi mengalami gangguan kecemasan.\n\nProbabilitas: {prob:.2%}")
-    else:
-        st.success(f"✅ Anda tidak menunjukkan tanda-tanda gangguan kecemasan.\n\nProbabilitas: {prob:.2%}")
-
-
-    
+        st.subheader("Hasil Prediksi:")
+        if pred == 1:
+            st.error(f"⚠ Anda berpotensi mengalami gangguan kecemasan. (Probabilitas: {prob:.2f})")
+        else:
+            st.success(f"✅ Anda tidak menunjukkan tanda-tanda gangguan kecemasan. (Probabilitas: {1-prob:.2f})")
+    except Exception as e:
+        st.error("Terjadi error dalam melakukan prediksi. Pastikan semua input valid.")
+        st.error(str(e))
