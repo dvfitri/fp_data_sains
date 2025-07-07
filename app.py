@@ -69,20 +69,21 @@ for col in label_encoders:
 expected_cols = scaler.feature_names_in_.tolist()
 
 # 💥 GANTI DENGAN INI — SCALING DENGAN NAMA KOLUMNYA
+i# === Scaling ===
+expected_cols = scaler.feature_names_in_.tolist()
 input_df = input_df[expected_cols].copy()
-input_df[expected_cols] = scaler.transform(input_df[expected_cols])
+input_df_scaled = pd.DataFrame(scaler.transform(input_df), columns=expected_cols)
 
-
-# === PREDIKSI ===
+# === Prediksi ===
 if st.button("🔍 Prediksi"):
-    input_df.columns = model.feature_names_in_  # ⬅️ PENTING!
-    pred = model.predict(input_df)[0]
-    prob = model.predict_proba(input_df)[0][1]
+    pred = model.predict(input_df_scaled)[0]
+    prob = model.predict_proba(input_df_scaled)[0][1]
 
     st.subheader("Hasil Prediksi:")
     if pred == 1:
         st.error(f"⚠️ Anda berpotensi mengalami gangguan kecemasan.\n\nProbabilitas: {prob:.2%}")
     else:
         st.success(f"✅ Anda tidak menunjukkan tanda-tanda gangguan kecemasan.\n\nProbabilitas: {prob:.2%}")
+
 
     
