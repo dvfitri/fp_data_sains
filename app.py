@@ -61,13 +61,18 @@ input_dict = {
 
 input_df = pd.DataFrame([input_dict])
 
-# === Encode Kategorikal ===
+# === Encode kolom kategorikal ===
 for col in label_encoders:
     input_df[col] = label_encoders[col].transform(input_df[col])
 
-# === Scaling ===
-numerical_cols = input_df.select_dtypes(include=['int64', 'float64']).columns
-input_df[numerical_cols] = scaler.transform(input_df[numerical_cols])
+# === Pastikan kolom sesuai urutan saat training ===
+expected_cols = scaler.feature_names_in_.tolist()
+
+# 💥 GANTI DENGAN INI — SCALING DENGAN NAMA KOLUMNYA
+input_df = input_df[expected_cols].copy()
+input_df[expected_cols] = scaler.transform(input_df[expected_cols])
+
+
 
 # === Prediksi ===
 if st.button("🔍 Prediksi"):
